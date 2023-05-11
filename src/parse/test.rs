@@ -22,3 +22,4 @@ macro_rules! snapshot {
 
 snapshot!(binary, "testdata/snapshots/binary.a");
 snapshot!(ifelse, "testdata/snapshots/ifelse.a");
+snapshot!(max, "testdata/snapshots/max.a");

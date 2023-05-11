@@ -1,6 +1,7 @@
 fn main() {
-  if 1 > 2 {
+  if 2 > 1 {
     return 1 + 4;
-  };
-  return 20;
+  } else {
+    return 20;
+  }
 }

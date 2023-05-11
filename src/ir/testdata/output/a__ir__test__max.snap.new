@@ -1,0 +1,159 @@
+---
+source: src/ir/test.rs
+assertion_line: 27
+expression: result
+---
+DefFunc(
+    DefFunc {
+        name: "max",
+        ret: I64,
+        params: [
+            (
+                Reg(
+                    0,
+                ),
+                I64,
+            ),
+            (
+                Reg(
+                    1,
+                ),
+                I64,
+            ),
+        ],
+        body: [
+            Enter(
+                Enter,
+            ),
+            Grt(
+                Grt {
+                    des: Reg(
+                        2,
+                    ),
+                    lhs: Reg(
+                        0,
+                    ),
+                    rhs: Reg(
+                        1,
+                    ),
+                },
+            ),
+            Conditional(
+                Conditional {
+                    label: Label(
+                        ".L0",
+                    ),
+                    reg: Reg(
+                        2,
+                    ),
+                },
+            ),
+            Return(
+                Return(
+                    Reg(
+                        0,
+                    ),
+                ),
+            ),
+            Jump(
+                Jump(
+                    Label(
+                        ".exit",
+                    ),
+                ),
+            ),
+            DefLabel(
+                DefLabel(
+                    Label(
+                        ".L0",
+                    ),
+                ),
+            ),
+            DefLabel(
+                DefLabel(
+                    Label(
+                        ".exit",
+                    ),
+                ),
+            ),
+            Leave(
+                Leave,
+            ),
+        ],
+    },
+)
+DefFunc(
+    DefFunc {
+        name: "main",
+        ret: I64,
+        params: [],
+        body: [
+            Enter(
+                Enter,
+            ),
+            LoadImm(
+                LoadImm {
+                    des: Reg(
+                        0,
+                    ),
+                    imm: Imm(
+                        1,
+                    ),
+                },
+            ),
+            LoadImm(
+                LoadImm {
+                    des: Reg(
+                        1,
+                    ),
+                    imm: Imm(
+                        2,
+                    ),
+                },
+            ),
+            Call(
+                Call {
+                    caller: Label(
+                        "max",
+                    ),
+                    args: [
+                        Reg(
+                            0,
+                        ),
+                        Reg(
+                            1,
+                        ),
+                    ],
+                    ret: Reg(
+                        1000,
+                    ),
+                },
+            ),
+            Return(
+                Return(
+                    Reg(
+                        1000,
+                    ),
+                ),
+            ),
+            Jump(
+                Jump(
+                    Label(
+                        ".exit",
+                    ),
+                ),
+            ),
+            DefLabel(
+                DefLabel(
+                    Label(
+                        ".exit",
+                    ),
+                ),
+            ),
+            Leave(
+                Leave,
+            ),
+        ],
+    },
+)
+

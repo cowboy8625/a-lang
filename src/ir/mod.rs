@@ -208,7 +208,7 @@ impl Ir for IrGenerator {
     }
 
     fn conditional(&mut self, label: Label, reg: Reg) -> Reg {
-        let instruction: Instruction = Conditional { reg, label }.into();
+        let instruction: Instruction = Conditional { label, reg }.into();
         self.push_to_block(instruction);
         reg
     }
@@ -308,19 +308,16 @@ impl AstVisitor for IrGenerator {
             if_token: _,
             cond,
             then_branch,
-            else_branch: _,
+            else_branch,
         } = expr_if;
-        // pub struct ExprIf {
-        //     pub if_token: super::keyword::If,
-        //     pub cond: Box<Expr>,
-        //     pub then_branch: ExprBlock,
-        //     pub else_branch: Option<(super::keyword::Else, Box<Expr>)>,
-        // }
         let cond_reg = self.visit_expr(cond);
         let label = self.gen_label();
         let des = self.conditional(label.clone(), cond_reg);
         self.visit_expr_block(then_branch);
         self.def_label(label);
+        if let Some((_, else_branch)) = else_branch {
+            self.visit_expr(&else_branch);
+        }
         des
     }
 }

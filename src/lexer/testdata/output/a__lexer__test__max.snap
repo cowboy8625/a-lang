@@ -1,0 +1,63 @@
+---
+source: src/lexer/test.rs
+expression: snapshot_lexing(contents)
+---
+fn max(x: i32, y: i32) -> i32 {
+^^ Fn((0,0)->(0,2))
+   ^^^ Ident 'max' (0,3)->(0,6)
+      ^ CtrlLParan '(' (0,6)->(0,7)
+       ^ Ident 'x' (0,7)->(0,8)
+        ^ CtrlColon ':' (0,8)->(0,9)
+          ^^^ Ident 'i32' (0,10)->(0,13)
+             ^ CtrlComma ',' (0,13)->(0,14)
+               ^ Ident 'y' (0,15)->(0,16)
+                ^ CtrlColon ':' (0,16)->(0,17)
+                  ^^^ Ident 'i32' (0,18)->(0,21)
+                     ^ CtrlRParan ')' (0,21)->(0,22)
+                       ^^ CtrlRightArrow '->' (0,23)->(0,25)
+                          ^^^ Ident 'i32' (0,26)->(0,29)
+                              ^ CtrlLBrace '{' (0,30)->(0,31)
+  if x > y {
+  ^^ If((1,2)->(1,4))
+     ^ Ident 'x' (1,5)->(1,6)
+       ^ OpGrt '>' (1,7)->(1,8)
+         ^ Ident 'y' (1,9)->(1,10)
+           ^ CtrlLBrace '{' (1,11)->(1,12)
+    return x;
+    ^^^^^^ Return((2,4)->(2,10))
+           ^ Ident 'x' (2,11)->(2,12)
+            ^ CtrlSemiColon ';' (2,12)->(2,13)
+  } else {
+  ^ CtrlRBrace '}' (3,2)->(3,3)
+    ^^^^ Else((3,4)->(3,8))
+         ^ CtrlLBrace '{' (3,9)->(3,10)
+    return y;
+    ^^^^^^ Return((4,4)->(4,10))
+           ^ Ident 'y' (4,11)->(4,12)
+            ^ CtrlSemiColon ';' (4,12)->(4,13)
+  };
+  ^ CtrlRBrace '}' (5,2)->(5,3)
+   ^ CtrlSemiColon ';' (5,3)->(5,4)
+}
+^ CtrlRBrace '}' (6,0)->(6,1)
+
+fn main() -> i32 {
+^^ Fn((8,0)->(8,2))
+   ^^^^ Ident 'main' (8,3)->(8,7)
+       ^ CtrlLParan '(' (8,7)->(8,8)
+        ^ CtrlRParan ')' (8,8)->(8,9)
+          ^^ CtrlRightArrow '->' (8,10)->(8,12)
+             ^^^ Ident 'i32' (8,13)->(8,16)
+                 ^ CtrlLBrace '{' (8,17)->(8,18)
+  return max(1,2);
+  ^^^^^^ Return((9,2)->(9,8))
+         ^^^ Ident 'max' (9,9)->(9,12)
+            ^ CtrlLParan '(' (9,12)->(9,13)
+             ^ LitInt '1' (9,13)->(9,14)
+              ^ CtrlComma ',' (9,14)->(9,15)
+               ^ LitInt '2' (9,15)->(9,16)
+                ^ CtrlRParan ')' (9,16)->(9,17)
+                 ^ CtrlSemiColon ';' (9,17)->(9,18)
+}
+^ CtrlRBrace '}' (10,0)->(10,1)
+

@@ -68,6 +68,7 @@ fn start_func_assembly() -> String {
     use x86_64_linux::{Instruction, X86Reg64};
     [
         Instruction::DefLabel("_start".into()),
+        Instruction::Call("main".into()),
         Instruction::MoveReg(X86Reg64::RDI.into(), X86Reg64::RAX.into()),
         Instruction::MoveImm(X86Reg64::RAX.into(), 60),
         Instruction::Syscall,

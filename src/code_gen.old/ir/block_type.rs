@@ -63,8 +63,7 @@ use super::{Input, Label, Op, Reg};
 //                 BlockType::Copy(IrCopy{ to, from })
 //             }
 //             (None, None, None, None, Some(label)) => {
-//                 BlockType::Label(label)
-//             },
+//                 BlockType::Label(label) },
 //             (None, Some(x), Some(y), Some(op), Some(jump)) => {
 //                 BlockType::Conditional(Conditional { jump, op, x, y })
 //             },
