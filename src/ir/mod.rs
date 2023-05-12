@@ -317,7 +317,7 @@ impl AstVisitor for IrGenerator {
         self.visit_expr_block(then_branch);
         self.def_label(label);
         if let Some((_, else_branch)) = else_branch {
-            self.visit_expr(&else_branch);
+            self.visit_expr(else_branch);
         }
         des
     }

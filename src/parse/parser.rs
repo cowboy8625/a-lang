@@ -235,7 +235,6 @@ impl Parser {
         self.if_expression()
     }
 
-
     fn comparison(&mut self) -> Expr {
         let mut expr = self.term();
         while let Some(op) = self
