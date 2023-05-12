@@ -10,6 +10,6 @@ expression: ast_string
 
 };)
 )
-(func main <NULL> () (return (max (1, 2, )))
+(func main <(i32)> () (return (max (1, 2, )))
 )
 

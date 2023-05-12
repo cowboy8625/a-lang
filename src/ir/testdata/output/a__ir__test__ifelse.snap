@@ -64,33 +64,10 @@ DefFunc(
                     ),
                 },
             ),
-            LoadImm(
-                LoadImm {
-                    des: Reg(
-                        4,
-                    ),
-                    imm: Imm(
-                        4,
-                    ),
-                },
-            ),
-            Add(
-                Add {
-                    des: Reg(
-                        5,
-                    ),
-                    lhs: Reg(
-                        3,
-                    ),
-                    rhs: Reg(
-                        4,
-                    ),
-                },
-            ),
             Return(
                 Return(
                     Reg(
-                        5,
+                        3,
                     ),
                 ),
             ),
@@ -105,6 +82,30 @@ DefFunc(
                 DefLabel(
                     Label(
                         ".L0",
+                    ),
+                ),
+            ),
+            LoadImm(
+                LoadImm {
+                    des: Reg(
+                        4,
+                    ),
+                    imm: Imm(
+                        100,
+                    ),
+                },
+            ),
+            Return(
+                Return(
+                    Reg(
+                        4,
+                    ),
+                ),
+            ),
+            Jump(
+                Jump(
+                    Label(
+                        ".exit",
                     ),
                 ),
             ),

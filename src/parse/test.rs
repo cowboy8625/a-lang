@@ -20,6 +20,6 @@ macro_rules! snapshot {
     };
 }
 
-snapshot!(binary, "testdata/snapshots/binary.a");
-snapshot!(ifelse, "testdata/snapshots/ifelse.a");
-snapshot!(max, "testdata/snapshots/max.a");
+snapshot!(binary, "../../snapshots/binary.a");
+snapshot!(ifelse, "../../snapshots/ifelse.a");
+snapshot!(max, "../../snapshots/max.a");

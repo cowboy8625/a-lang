@@ -14,20 +14,18 @@ fn main() {
        ^ OpGrt '>' (1,7)->(1,8)
          ^ LitInt '3' (1,9)->(1,10)
            ^ CtrlLBrace '{' (1,11)->(1,12)
-    1 + 4;
-    ^ LitInt '1' (2,4)->(2,5)
-      ^ OpAdd '+' (2,6)->(2,7)
-        ^ LitInt '4' (2,8)->(2,9)
-         ^ CtrlSemiColon ';' (2,9)->(2,10)
+    return 1;
+    ^^^^^^ Return((2,4)->(2,10))
+           ^ LitInt '1' (2,11)->(2,12)
+            ^ CtrlSemiColon ';' (2,12)->(2,13)
   } else {
   ^ CtrlRBrace '}' (3,2)->(3,3)
     ^^^^ Else((3,4)->(3,8))
          ^ CtrlLBrace '{' (3,9)->(3,10)
-    100 + 2;
-    ^^^ LitInt '100' (4,4)->(4,7)
-        ^ OpAdd '+' (4,8)->(4,9)
-          ^ LitInt '2' (4,10)->(4,11)
-           ^ CtrlSemiColon ';' (4,11)->(4,12)
+    return 100;
+    ^^^^^^ Return((4,4)->(4,10))
+           ^^^ LitInt '100' (4,11)->(4,14)
+              ^ CtrlSemiColon ';' (4,14)->(4,15)
   }
   ^ CtrlRBrace '}' (5,2)->(5,3)
 }

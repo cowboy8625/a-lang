@@ -67,6 +67,20 @@ DefFunc(
                     ),
                 },
             ),
+            Return(
+                Return(
+                    Reg(
+                        4,
+                    ),
+                ),
+            ),
+            Jump(
+                Jump(
+                    Label(
+                        ".exit",
+                    ),
+                ),
+            ),
             DefLabel(
                 DefLabel(
                     Label(

@@ -12,6 +12,8 @@ main__:
       imul       rcx,       rdx
        mov       rsi,       rdi
        add       rsi,       rcx
+       mov       rax,       rsi
+       jmp     .exit__
 .exit__:
        mov       rbp,       rsp
        pop       rbp

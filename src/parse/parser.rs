@@ -184,9 +184,6 @@ impl Parser {
     fn statement(&mut self) -> PResult<Statement> {
         let stmt = self.expr_return()?;
         let span = stmt.span();
-        self.stream
-            .next_if::<CtrlSemiColon>()
-            .ok_or::<String>("statements end in ';'".into())?;
         Ok(Statement { stmt, span })
     }
 
@@ -196,11 +193,10 @@ impl Parser {
             return Ok(self.expression());
         };
         let expr = self.expression();
+        self.stream
+            .next_if::<CtrlSemiColon>()
+            .ok_or::<String>("return statements end in ';'".into())?;
         Ok(ExprReturn::new(ret, expr).into())
-    }
-
-    fn expression(&mut self) -> Expr {
-        self.if_expression()
     }
 
     // NOTE: Probably best that these functions return a Option over a Result cause then functions
@@ -234,6 +230,11 @@ impl Parser {
         };
         Some((keyword_else, Box::new(block)))
     }
+
+    fn expression(&mut self) -> Expr {
+        self.if_expression()
+    }
+
 
     fn comparison(&mut self) -> Expr {
         let mut expr = self.term();

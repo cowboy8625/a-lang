@@ -1,6 +1,5 @@
 ---
 source: src/ir/test.rs
-assertion_line: 27
 expression: result
 ---
 DefFunc(
@@ -66,6 +65,20 @@ DefFunc(
                 DefLabel(
                     Label(
                         ".L0",
+                    ),
+                ),
+            ),
+            Return(
+                Return(
+                    Reg(
+                        1,
+                    ),
+                ),
+            ),
+            Jump(
+                Jump(
+                    Label(
+                        ".exit",
                     ),
                 ),
             ),

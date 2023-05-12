@@ -14,12 +14,12 @@ main__:
       test       rdx,       rdx
         jz       .L0__
        mov       rcx,         1
-       mov        r8,         4
-       mov        r9,       rcx
-       add        r9,        r8
-       mov       rax,        r9
+       mov       rax,       rcx
        jmp     .exit__
 .L0__:
+       mov        r8,       100
+       mov       rax,        r8
+       jmp     .exit__
 .exit__:
        mov       rbp,       rsp
        pop       rbp

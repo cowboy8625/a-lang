@@ -35,9 +35,8 @@ fn max(x: i32, y: i32) -> i32 {
     ^^^^^^ Return((4,4)->(4,10))
            ^ Ident 'y' (4,11)->(4,12)
             ^ CtrlSemiColon ';' (4,12)->(4,13)
-  };
+  }
   ^ CtrlRBrace '}' (5,2)->(5,3)
-   ^ CtrlSemiColon ';' (5,3)->(5,4)
 }
 ^ CtrlRBrace '}' (6,0)->(6,1)
 
