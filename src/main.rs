@@ -3,6 +3,7 @@ use std::process::Command;
 mod ir;
 mod lexer;
 mod parse;
+mod semantic_analysis;
 mod x86_64_linux;
 
 const HELP_MESSAGE: &str = "
