@@ -1,0 +1,5 @@
+#!/bin/bash
+
+filename=$1;
+exefile=${filename%.*}
+fasm $filename && $exefile && echo $? || echo $?

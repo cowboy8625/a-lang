@@ -29,11 +29,26 @@ pub fn instruction_to_string(ir: Vec<Instruction>) -> Result<String, Vec<String>
 trait Compile {
     fn compile(&self, state: &mut RegState) -> Vec<Instruction>;
 }
+trait TypeSize {
+    fn size(&self) -> &'static str;
+}
+
+impl TypeSize for ir::Type {
+    fn size(&self) -> &'static str {
+        match self {
+            Self::U64 => "qword",
+            Self::Null => unreachable!("no size"),
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Instruction {
+    Comment(String),
     MoveImm(X86Reg, u64),
     MoveReg(X86Reg, X86Reg),
+    MoveMemReg(Mem, X86Reg),
+    MoveRegMem(X86Reg, Mem),
     MoveZx(X86Reg),
     Add(X86Reg, X86Reg),
     Sub(X86Reg, X86Reg),
@@ -54,6 +69,9 @@ pub enum Instruction {
 impl fmt::Display for Instruction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Comment(message) => {
+                writeln!(f, "    ;; {message}")
+            }
             Self::MoveImm(des, value) => {
                 writeln!(f, "{:>10}{:>10},{:>10}", "mov", des.to_string(), value)
             }
@@ -63,6 +81,20 @@ impl fmt::Display for Instruction {
                 "mov",
                 des.to_string(),
                 src.to_string()
+            ),
+            Self::MoveMemReg(mem, reg) => writeln!(
+                f,
+                "{:>10}{:>16},{:>10}",
+                "mov",
+                mem.to_string(),
+                reg.to_string()
+            ),
+            Self::MoveRegMem(reg, mem) => writeln!(
+                f,
+                "{:>10}{:>10},{:>16}",
+                "mov",
+                reg.to_string(),
+                mem.to_string(),
             ),
             Self::MoveZx(src) => writeln!(f, "{:>10}{:>10},{:>10}", "movzx", src.to_string(), "al"),
             Self::Add(des, reg) => writeln!(
@@ -132,6 +164,7 @@ impl Compile for ir::Instruction {
     fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
         match self {
             ir::Instruction::LoadImm(i) => i.compile(state),
+            ir::Instruction::CopyReg(i) => i.compile(state),
             ir::Instruction::DefFunc(i) => i.compile(state),
             ir::Instruction::Add(i) => i.compile(state),
             ir::Instruction::Sub(i) => i.compile(state),
@@ -161,22 +194,52 @@ impl Compile for ir::LoadImm {
         vec![Instruction::MoveImm(reg, *imm)]
     }
 }
+// CopyReg(CopyReg),
+impl Compile for ir::CopyReg {
+    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+        let ir::CopyReg { des, src } = self;
+        let des = state.get_reg(des);
+        let src = state.get_reg(src);
+        vec![Instruction::MoveReg(des, src)]
+    }
+}
 // DefFunc(DefFunc),
 impl Compile for ir::DefFunc {
     fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
         let ir::DefFunc {
-            name,
-            ret: _,
-            params: _,
-            body,
-            ..
+            name, params, body, ..
         } = self;
-        // FIXME:getting regesters for the params is currently not implemented correctly.
-        let mut result = body
+        let mut result = vec![Instruction::DefLabel(name.into())];
+        let params = params
+            .iter()
+            .enumerate()
+            .flat_map(|(idx, (reg, ty))| {
+                let xreg = state.get_param_reg(reg);
+                vec![
+                    Instruction::MoveMemReg(
+                        Mem::Param {
+                            ty: *ty,
+                            offset: (idx + 1) * 8,
+                        },
+                        xreg,
+                    ),
+                    Instruction::MoveRegMem(
+                        xreg,
+                        Mem::Param {
+                            ty: *ty,
+                            offset: (idx + 1) * 8,
+                        },
+                    ),
+                ]
+            })
+            .collect::<Vec<Instruction>>();
+        let mut body = body
             .iter()
             .flat_map(|inst| inst.compile(state))
             .collect::<Vec<Instruction>>();
-        result.insert(0, Instruction::DefLabel(name.into()));
+        result.push(body.remove(0));
+        result.extend_from_slice(&params);
+        result.extend_from_slice(&body);
         // let ret_reg = state.get_ret_reg();
         // let last_reg = state.last_used_reg();
         // let instruction = Instruction::MoveReg(ret_reg, last_reg);
@@ -195,6 +258,7 @@ impl Compile for ir::Add {
         let xrhs = state.get_reg(rhs);
         state.release_reg(rhs);
         vec![
+            Instruction::Comment("Add".into()),
             Instruction::MoveReg(xdes, xlhs),
             Instruction::Add(xdes, xrhs),
         ]
@@ -207,7 +271,11 @@ impl Compile for ir::Sub {
         let des = state.get_reg(des);
         let lhs = state.get_reg(lhs);
         let rhs = state.get_reg(rhs);
-        vec![Instruction::MoveReg(des, lhs), Instruction::Sub(des, rhs)]
+        vec![
+            Instruction::Comment("Sub".into()),
+            Instruction::MoveReg(des, lhs),
+            Instruction::Sub(des, rhs),
+        ]
     }
 }
 // Mul(Mul),
@@ -220,6 +288,7 @@ impl Compile for ir::Mul {
         let xrhs = state.get_reg(rhs);
         state.release_reg(rhs);
         vec![
+            Instruction::Comment("Mul".into()),
             Instruction::MoveReg(xdes, xlhs),
             Instruction::Mul(xdes, xrhs),
         ]
@@ -232,7 +301,11 @@ impl Compile for ir::Div {
         let des = state.get_reg(des);
         let lhs = state.get_reg(lhs);
         let rhs = state.get_reg(rhs);
-        vec![Instruction::MoveReg(des, lhs), Instruction::Div(des, rhs)]
+        vec![
+            Instruction::Comment("Div".into()),
+            Instruction::MoveReg(des, lhs),
+            Instruction::Div(des, rhs),
+        ]
     }
 }
 
@@ -243,6 +316,7 @@ impl Compile for ir::Grt {
         let lhs = state.get_reg(lhs);
         let rhs = state.get_reg(rhs);
         vec![
+            Instruction::Comment("Grt".into()),
             Instruction::MoveReg(des, lhs),
             Instruction::Cmp(des, rhs),
             Instruction::SetG,
@@ -261,6 +335,7 @@ impl Compile for ir::Conditional {
     fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
         let des = state.get_reg(&self.reg);
         vec![
+            Instruction::Comment("Conditional".into()),
             Instruction::Test(des, des),
             Instruction::JumpZero(self.label.to_string()),
         ]
@@ -269,41 +344,69 @@ impl Compile for ir::Conditional {
 // Jump(Jump),
 impl Compile for ir::Jump {
     fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
-        vec![Instruction::Jump(self.name())]
+        vec![
+            Instruction::Comment("Jump".into()),
+            Instruction::Jump(self.name()),
+        ]
     }
 }
 // DefLabel(DefLabel),
 impl Compile for ir::DefLabel {
     fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
-        vec![Instruction::DefLabel(self.name())]
+        vec![
+            Instruction::Comment("DefLabel".into()),
+            Instruction::DefLabel(self.name()),
+        ]
     }
 }
 // Call(Call),
 impl Compile for ir::Call {
     fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
-        vec![Instruction::Call(self.caller.0.to_string())]
+        vec![
+            Instruction::Comment("Call".into()),
+            Instruction::Call(self.caller.0.to_string()),
+            // // FIXME: This is just a hot fix.... figure out a better way.
+            // Instruction::MoveReg(X86Reg64::RDX.into(), X86Reg64::RAX.into()),
+        ]
     }
 }
 
 // Return(Return),
 impl Compile for ir::Return {
     fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
-        let reg = state.get_reg(&self.0);
+        let Some(r) = self.0 else {
+            return vec![];
+        };
+        let reg = state.get_reg(&r);
         let ret = state.get_ret_reg();
-        vec![Instruction::MoveReg(ret, reg)]
+        vec![
+            Instruction::Comment("Return".into()),
+            Instruction::MoveReg(ret, reg),
+        ]
     }
 }
 
 // Enter(Enter),
 impl Compile for ir::Enter {
     fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
-        vec![Instruction::ProLog]
+        vec![Instruction::Comment("Enter".into()), Instruction::ProLog]
     }
 }
 // Leave(Leave),
 impl Compile for ir::Leave {
     fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
-        vec![Instruction::Epilog]
+        vec![Instruction::Comment("Leave".into()), Instruction::Epilog]
+    }
+}
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Mem {
+    Param { ty: ir::Type, offset: usize },
+}
+impl fmt::Display for Mem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Param { ty, offset } => write!(f, "{} [rbp-{offset}]", ty.size()),
+        }
     }
 }
 

@@ -3,5 +3,5 @@ fn main() {
     return 4;
   } else {
     return 100;
-  };
+  }
 }

@@ -5,7 +5,6 @@ expression: result
 DefFunc(
     DefFunc {
         name: "main",
-        ret: I64,
         params: [],
         body: [
             Enter(

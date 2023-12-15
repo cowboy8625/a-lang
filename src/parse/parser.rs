@@ -290,8 +290,8 @@ impl Parser {
             }
         }
         let Some(right_paran) = self.stream.next_if::<CtrlRParan>().cloned() else {
-                // TODO: make this report an error
-                panic!("expected a right paran");
+            // TODO: make this report an error
+            panic!("expected a right paran");
         };
         Expr::Call(ExprCall::new(
             Box::new(caller),
@@ -302,13 +302,15 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Expr {
-        let Some(expr) = self.expr_next_if::<LitInt>()
+        let Some(expr) = self
+            .expr_next_if::<LitInt>()
             .or(self.expr_next_if::<LitBool>())
             .or(self.expr_next_if::<LitStr>())
             .or(self.expr_next_if::<LitChar>())
-            .or(self.expr_next_if::<Ident>()) else {
-                // TODO: make this report an error
-                panic!("unknown expression '{:?}'", self.stream.peek_blind());
+            .or(self.expr_next_if::<Ident>())
+        else {
+            // TODO: make this report an error
+            panic!("unknown expression '{:?}'", self.stream.peek_blind());
         };
         expr
     }

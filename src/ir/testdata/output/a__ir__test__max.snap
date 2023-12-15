@@ -5,19 +5,18 @@ expression: result
 DefFunc(
     DefFunc {
         name: "max",
-        ret: I64,
         params: [
             (
                 Reg(
                     0,
                 ),
-                I64,
+                U64,
             ),
             (
                 Reg(
                     1,
                 ),
-                I64,
+                U64,
             ),
         ],
         body: [
@@ -98,7 +97,6 @@ DefFunc(
 DefFunc(
     DefFunc {
         name: "main",
-        ret: I64,
         params: [],
         body: [
             Enter(
@@ -138,14 +136,14 @@ DefFunc(
                         ),
                     ],
                     ret: Reg(
-                        1000,
+                        2,
                     ),
                 },
             ),
             Return(
                 Return(
                     Reg(
-                        1000,
+                        2,
                     ),
                 ),
             ),

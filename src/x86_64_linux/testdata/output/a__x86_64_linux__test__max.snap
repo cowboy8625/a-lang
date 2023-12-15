@@ -5,16 +5,20 @@ expression: result
 max__:
       push       rbp
        mov       rbp,       rsp
-       mov       rdi,       rsi
-       cmp       rdi,       rdx
+       mov   qword [rbp-8],       rdi
+       mov       rdi,   qword [rbp-8]
+       mov  qword [rbp-16],       rsi
+       mov       rsi,  qword [rbp-16]
+       mov       rdx,       rdi
+       cmp       rdx,       rsi
       setg        al
-     movzx       rdi,        al
-      test       rdi,       rdi
+     movzx       rdx,        al
+      test       rdx,       rdx
         jz       .L0__
-       mov       rax,       rsi
+       mov       rax,       rdi
        jmp     .exit__
 .L0__:
-       mov       rax,       rdx
+       mov       rax,       rsi
        jmp     .exit__
 .exit__:
        mov       rbp,       rsp
@@ -26,7 +30,7 @@ main__:
        mov       rdi,         1
        mov       rsi,         2
       call       max__
-       mov       rax,       rd:b x
+       mov       rax,       rdx
        jmp     .exit__
 .exit__:
        mov       rbp,       rsp

@@ -13,6 +13,12 @@ pub enum Expr {
     Return(ExprReturn),
 }
 
+impl Expr {
+    pub fn is_call(&self) -> bool {
+        matches!(self, Self::Call(_))
+    }
+}
+
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -188,7 +194,11 @@ pub struct ExprCall {
 impl fmt::Display for ExprCall {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self { caller, args, .. } = &self;
-        let args = args.iter().map(|i| format!("{i}, ")).collect::<String>();
+        let args = args.iter().fold(String::new(), |mut acc, i| {
+            acc += &i.to_string();
+            acc += ", ";
+            acc
+        });
         write!(f, "({caller} ({args}))")
     }
 }
@@ -297,10 +307,11 @@ pub struct ExprBlock {
 impl std::fmt::Display for ExprBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self { stmts, .. } = &self;
-        let stmts = stmts
-            .iter()
-            .map(|stmt| format!("{stmt}\n"))
-            .collect::<String>();
+        let stmts = stmts.iter().fold(String::new(), |mut acc, stmt| {
+            acc += "\n";
+            acc += &stmt.to_string();
+            acc
+        });
         write!(f, "{stmts}")
     }
 }

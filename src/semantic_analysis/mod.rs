@@ -1,6 +1,7 @@
-#![allow(unused)]
-
 mod analysis;
+#[cfg(test)]
+mod test;
+pub use analysis::SemanticAnalysisVisitor;
 pub use analysis::SymbolTableBuilder;
 
 use crate::lexer::Span;
@@ -8,7 +9,7 @@ use crate::parse::ast;
 use std::collections::HashMap;
 use std::fmt;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Type {
     Unit,
     U64,
@@ -23,7 +24,7 @@ impl Default for Type {
 impl From<&ast::Type> for Type {
     fn from(ast::Type(ast::Ident { value, .. }): &ast::Type) -> Self {
         match value.as_str() {
-            "()" | "unit" | "Unit" | "none" | "None" | "null" => Self::Unit,
+            "()" => Self::Unit,
             "u64" => Self::U64,
             _ => unimplemented!("{value:?}"),
         }
@@ -31,7 +32,7 @@ impl From<&ast::Type> for Type {
 }
 
 impl Type {
-    pub fn size(&self) -> usize {
+    pub fn _size(&self) -> usize {
         match self {
             Self::Unit => 0,
             Self::U64 => 8,
@@ -48,11 +49,17 @@ impl fmt::Display for Type {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Scope {
     Global,
     Block,
     Param,
+}
+
+impl Default for Scope {
+    fn default() -> Self {
+        Self::Global
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -95,21 +102,17 @@ pub struct Variable {
 pub struct Function {
     pub scope: Scope,
     pub name: String,
+    pub params: Vec<Variable>,
     pub ret: Type,
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct SymbolTable {
     pub symbols: HashMap<String, Symbol>,
 }
 
 impl SymbolTable {
-    pub fn new() -> Self {
-        Self {
-            symbols: HashMap::new(),
-        }
-    }
     pub fn insert(&mut self, symbol: Symbol) {
         self.symbols.insert(symbol.name().to_string(), symbol);
     }

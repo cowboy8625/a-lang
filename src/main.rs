@@ -1,5 +1,7 @@
 use std::process::Command;
 
+use semantic_analysis::{SemanticAnalysisVisitor, SymbolTableBuilder};
+
 mod ir;
 mod lexer;
 mod parse;
@@ -54,6 +56,14 @@ fn compile(flags: Flags) -> Result<(), Vec<String>> {
         .and_then(print_output(flags.debug_tokens))
         .and_then(parse::parse)
         .and_then(print_output(flags.debug_ast))
+        // FIXME: this needs to return a Result
+        .map(|ast| {
+            let mut symbol_table_builder = SymbolTableBuilder::default();
+            symbol_table_builder.visit(&ast);
+            let symbol_table = symbol_table_builder.build();
+
+            (ast, symbol_table)
+        })
         .and_then(ir::code_gen)
         .and_then(print_output(flags.debug_ir))
         .and_then(x86_64_linux::compile_ir_code)

@@ -1,14 +1,34 @@
+use crate::{lexer::Token, parse::Ident};
+
 use super::{Imm, Label, Reg};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Type {
-    I64,
+    Null,
+    U64,
+}
+
+impl TryFrom<&Ident> for Type {
+    type Error = &'static str;
+    fn try_from(value: &Ident) -> Result<Self, Self::Error> {
+        match value.value().as_str() {
+            "u64" => Ok(Self::U64),
+            "null" => Ok(Self::Null),
+            _ => Err("unknown type"),
+        }
+    }
+}
+impl Default for Type {
+    fn default() -> Self {
+        Self::Null
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Instruction {
     DefFunc(DefFunc),
     LoadImm(LoadImm),
+    CopyReg(CopyReg),
     Add(Add),
     Sub(Sub),
     Mul(Mul),
@@ -52,6 +72,7 @@ macro_rules! from_to {
 
 from_to!(DefFunc, Instruction);
 from_to!(LoadImm, Instruction);
+from_to!(CopyReg, Instruction);
 from_to!(Copy, Instruction);
 from_to!(Conditional, Instruction);
 from_to!(Jump, Instruction);
@@ -86,7 +107,6 @@ op_instruction!(Grt);
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DefFunc {
     pub name: String,
-    pub ret: Type,
     pub params: Vec<(Reg, Type)>,
     pub body: Vec<Instruction>,
 }
@@ -95,6 +115,12 @@ pub struct DefFunc {
 pub struct LoadImm {
     pub des: Reg,
     pub imm: Imm,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CopyReg {
+    pub des: Reg,
+    pub src: Reg,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -135,7 +161,7 @@ impl DefLabel {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Return(pub Reg);
+pub struct Return(pub Option<Reg>);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Enter;

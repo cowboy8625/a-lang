@@ -11,10 +11,37 @@ use crate::parse::{
     Expr, ExprBinary, ExprBlock, ExprCall, ExprIf, ExprLit, ExprReturn, ExprVar, Ident, Item,
     ItemFn, Lit, LitBool, LitInt, Op, Param, Statement,
 };
+use crate::semantic_analysis::SymbolTable;
 
-pub fn code_gen(ast: Vec<Item>) -> Result<Vec<Instruction>, Vec<String>> {
-    let mut gen = IrGenerator::default();
+pub fn code_gen(
+    (ast, symbol_table): (Vec<Item>, SymbolTable),
+) -> Result<Vec<Instruction>, Vec<String>> {
+    let mut gen = IrGenerator::new(symbol_table);
     gen.visit(&ast);
+    // for i in gen.code.iter() {
+    //     match i {
+    //         Instruction::DefFunc(DefFunc { name, params, body }) => {
+    //             eprintln!("{name}: {params:?}, {body:?}")
+    //         }
+    //         Instruction::LoadImm(LoadImm { des, imm }) => eprintln!("{des:?}: {imm:?}"),
+    //         Instruction::CopyReg(CopyReg { des, src }) => eprintln!("{des:?}: {src:?}"),
+    //         Instruction::Add(Add { des, lhs, rhs }) => eprintln!("{des:?}: {lhs:?} + {rhs:?}"),
+    //         Instruction::Sub(Sub { des, lhs, rhs }) => eprintln!("{des:?}: {lhs:?} - {rhs:?}"),
+    //         Instruction::Mul(Mul { des, lhs, rhs }) => eprintln!("{des:?}: {lhs:?} * {rhs:?}"),
+    //         Instruction::Div(Div { des, lhs, rhs }) => eprintln!("{des:?}: {lhs:?} / {rhs:?}"),
+    //         Instruction::Grt(Grt { des, lhs, rhs }) => eprintln!("{des:?}: {lhs:?} > {rhs:?}"),
+    //         Instruction::Copy(Copy { to, from }) => eprintln!("{to:?}: {from:?}"),
+    //         Instruction::Conditional(Conditional { label, reg }) => eprintln!("{label:?}: {reg:?}"),
+    //         Instruction::Jump(Jump(label)) => eprintln!("{label}"),
+    //         Instruction::DefLabel(DefLabel(label)) => eprintln!("{label}:"),
+    //         Instruction::Call(Call { caller, args, ret }) => {
+    //             eprintln!("{caller}: {args:?}, {ret:?}")
+    //         }
+    //         Instruction::Return(Return(reg)) => eprintln!("return {reg:?}"),
+    //         Instruction::Enter(_) => eprintln!("enter"),
+    //         Instruction::Leave(_) => eprintln!("leave"),
+    //     }
+    // }
     Ok(gen.code)
 }
 
@@ -66,7 +93,7 @@ trait Ir {
     fn binary(&mut self, op: &Op, lhs: Reg, rhs: Reg) -> Reg;
     fn conditional(&mut self, label: Label, reg: Reg) -> Reg;
     fn call(&mut self, label: Label, args: Vec<Reg>, ret: Reg) -> Reg;
-    fn early_return(&mut self, reg: Reg) -> Reg;
+    fn early_return(&mut self, reg: Option<Reg>);
 }
 
 trait AstVisitor: Ir {
@@ -84,7 +111,9 @@ trait AstVisitor: Ir {
     fn visit_expr_return(&mut self, expr_ret: &ExprReturn) -> Reg {
         let ExprReturn { expr, .. } = expr_ret;
         let reg = self.visit_expr(expr);
-        self.early_return(reg);
+        eprintln!("ret: {:?}", reg);
+        let r = if (**expr).is_call() { None } else { Some(reg) };
+        self.early_return(r);
         self.jump(".exit".into());
         reg
     }
@@ -121,7 +150,6 @@ trait AstVisitor: Ir {
     }
 
     fn visit_expr_block(&mut self, block: &ExprBlock) -> Reg {
-        // FIXME: This should return a Reg if we keep the current pattern
         let mut reg: Option<Reg> = None;
         for stmt in block.stmts.iter() {
             reg = Some(self.visit_stmt(stmt));
@@ -148,9 +176,16 @@ struct IrGenerator {
     reg_counter: usize,
     vars: HashMap<String, Reg>,
     gen_label_number: usize,
+    symbol_table: SymbolTable,
 }
 
 impl IrGenerator {
+    fn new(symbol_table: SymbolTable) -> Self {
+        Self {
+            symbol_table,
+            ..Default::default()
+        }
+    }
     fn push_to_block(&mut self, ir: impl Into<Instruction>) {
         self.block.push(ir.into());
     }
@@ -219,10 +254,9 @@ impl Ir for IrGenerator {
         ret
     }
 
-    fn early_return(&mut self, reg: Reg) -> Reg {
+    fn early_return(&mut self, reg: Option<Reg>) {
         let instruction: Instruction = Return(reg).into();
         self.push_to_block(instruction);
-        reg
     }
 }
 
@@ -245,7 +279,7 @@ impl AstVisitor for IrGenerator {
             panic!("expected Ident");
         };
         // FIXME: this reg needs to be stored with var in discriper?
-        let ret = Reg(1000);
+        let ret = self.get_reg();
         let args = args
             .iter()
             .map(|expr| self.visit_expr(expr))
@@ -275,11 +309,11 @@ impl AstVisitor for IrGenerator {
         self.reset_regester_count();
         let params = params
             .iter()
-            .map(|p| (self.visit_params(p), Type::I64))
+            .map(|p| (self.visit_params(p), Type::U64))
             .collect();
 
         self.push_to_block(Enter);
-        self.visit_expr_block(block);
+        let _reg = self.visit_expr_block(block);
         self.def_label(".exit".into());
         self.push_to_block(Leave);
 
@@ -288,7 +322,6 @@ impl AstVisitor for IrGenerator {
         self.push_fn(DefFunc {
             name: name.value(),
             params,
-            ret: Type::I64,
             body,
         });
     }

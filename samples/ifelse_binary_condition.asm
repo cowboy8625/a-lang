@@ -5,23 +5,20 @@ entry _start__
 main__:
       push       rbp
        mov       rbp,       rsp
-       mov       rdi,         2
-       mov       rsi,         1
+       mov       rdi,         1
+       mov       rsi,         3
        mov       rdx,       rdi
        cmp       rdx,       rsi
       setg        al
      movzx       rdx,        al
       test       rdx,       rdx
         jz       .L0__
-       mov       rcx,         1
-       mov        r8,         4
-       mov        r9,       rcx
-       add        r9,        r8
-       mov       rax,        r9
+       mov       rcx,         4
+       mov       rax,       rcx
        jmp     .exit__
 .L0__:
-       mov       rcx,        20
-       mov       rax,       rcx
+       mov        r8,       100
+       mov       rax,        r8
        jmp     .exit__
 .exit__:
        mov       rbp,       rsp

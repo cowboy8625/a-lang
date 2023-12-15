@@ -1,3 +1,5 @@
+use crate::lexer::{Span, Token};
+
 use super::{ExprBlock, Ident, Param, Type};
 use std::fmt;
 
@@ -40,11 +42,11 @@ impl ItemFn {
         }
     }
 
-    // pub fn span(&self) -> Span {
-    //     let start = self.keyword_fn.span();
-    //     let end = self.block.span();
-    //     Span::from((start, end))
-    // }
+    pub fn span(&self) -> Span {
+        let start = self.keyword_fn.span();
+        let end = self.block.span();
+        Span::from((start, end))
+    }
 }
 
 impl fmt::Display for ItemFn {
