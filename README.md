@@ -2,12 +2,12 @@
 
 A is just a place holder for a name that is more suitable for the language.
 
-
 ### TODO
 
-- [ ] replace [fasm](https://flatassembler.net/) with in house assembler
-- [ ] compile with llvm
 - [ ] compile to wasm
-- [ ] compile to in house vm
+- [ ] compile to linux
 - [ ] compile to windows
-- [ ] make compiler work on mac..... JK
+- [ ] compile to mac
+- [ ] compile with llvm
+- [ ] compile to in house virtual machine
+- [ ] replace [fasm](https://flatassembler.net/) with in house assembler
