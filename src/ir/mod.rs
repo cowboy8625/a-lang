@@ -111,7 +111,6 @@ trait AstVisitor: Ir {
     fn visit_expr_return(&mut self, expr_ret: &ExprReturn) -> Reg {
         let ExprReturn { expr, .. } = expr_ret;
         let reg = self.visit_expr(expr);
-        eprintln!("ret: {:?}", reg);
         let r = if (**expr).is_call() { None } else { Some(reg) };
         self.early_return(r);
         self.jump(".exit".into());
@@ -176,13 +175,13 @@ struct IrGenerator {
     reg_counter: usize,
     vars: HashMap<String, Reg>,
     gen_label_number: usize,
-    symbol_table: SymbolTable,
+    _symbol_table: SymbolTable,
 }
 
 impl IrGenerator {
-    fn new(symbol_table: SymbolTable) -> Self {
+    fn new(_symbol_table: SymbolTable) -> Self {
         Self {
-            symbol_table,
+            _symbol_table,
             ..Default::default()
         }
     }

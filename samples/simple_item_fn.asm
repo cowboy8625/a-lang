@@ -4,10 +4,6 @@ segment readable executable
 entry _start__
 add__:
     ;; Enter
-       mov   qword [rbp-8],       rdi
-       mov       rdi,   qword [rbp-8]
-       mov  qword [rbp-16],       rsi
-       mov       rsi,  qword [rbp-16]
       push       rbp
        mov       rbp,       rsp
     ;; Add
@@ -25,8 +21,6 @@ add__:
        ret
 addOne__:
     ;; Enter
-       mov   qword [rbp-8],       rdi
-       mov       rdi,   qword [rbp-8]
       push       rbp
        mov       rbp,       rsp
        mov       rsi,         1

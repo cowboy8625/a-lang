@@ -75,7 +75,7 @@ impl SemanticAnalysisVisitor for SymbolTableBuilder {
         else {
             panic!("expected Ident found {:?}", call.caller);
         };
-        let Some(Symbol::Function(function)) = self.symbol_table.get(&value).cloned() else {
+        let Some(Symbol::Function(function)) = self.symbol_table.get(value).cloned() else {
             todo!("log error undefined symbol")
         };
 

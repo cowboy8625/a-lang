@@ -121,7 +121,7 @@ impl SymbolTable {
         self.symbols.get(name)
     }
 
-    pub fn delete(&mut self, name: &str) {
+    pub fn _delete(&mut self, name: &str) {
         self.symbols.remove(name);
     }
 }
