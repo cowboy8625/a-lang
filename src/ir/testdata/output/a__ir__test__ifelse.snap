@@ -2,123 +2,19 @@
 source: src/ir/test.rs
 expression: result
 ---
-DefFunc(
-    DefFunc {
-        name: "main",
-        params: [],
-        body: [
-            Enter(
-                Enter,
-            ),
-            LoadImm(
-                LoadImm {
-                    des: Reg(
-                        0,
-                    ),
-                    imm: Imm(
-                        1,
-                    ),
-                },
-            ),
-            LoadImm(
-                LoadImm {
-                    des: Reg(
-                        1,
-                    ),
-                    imm: Imm(
-                        3,
-                    ),
-                },
-            ),
-            Grt(
-                Grt {
-                    des: Reg(
-                        2,
-                    ),
-                    lhs: Reg(
-                        0,
-                    ),
-                    rhs: Reg(
-                        1,
-                    ),
-                },
-            ),
-            Conditional(
-                Conditional {
-                    label: Label(
-                        ".L0",
-                    ),
-                    reg: Reg(
-                        2,
-                    ),
-                },
-            ),
-            LoadImm(
-                LoadImm {
-                    des: Reg(
-                        3,
-                    ),
-                    imm: Imm(
-                        1,
-                    ),
-                },
-            ),
-            Return(
-                Return(
-                    Reg(
-                        3,
-                    ),
-                ),
-            ),
-            Jump(
-                Jump(
-                    Label(
-                        ".exit",
-                    ),
-                ),
-            ),
-            DefLabel(
-                DefLabel(
-                    Label(
-                        ".L0",
-                    ),
-                ),
-            ),
-            LoadImm(
-                LoadImm {
-                    des: Reg(
-                        4,
-                    ),
-                    imm: Imm(
-                        100,
-                    ),
-                },
-            ),
-            Return(
-                Return(
-                    Reg(
-                        4,
-                    ),
-                ),
-            ),
-            Jump(
-                Jump(
-                    Label(
-                        ".exit",
-                    ),
-                ),
-            ),
-            DefLabel(
-                DefLabel(
-                    Label(
-                        ".exit",
-                    ),
-                ),
-            ),
-            Leave(
-                Leave,
-            ),
-        ],
-    },
-)
-
+function main() {
+    enter
+    load %0 1
+    load %1 3
+    %2 = %0 > %1
+    if %2 goto .L0
+    load %3 1
+    return %3
+    goto .exit
+.L0:
+    load %4 100
+    return %4
+    goto .exit
+.exit:
+    leave
+}

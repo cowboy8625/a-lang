@@ -77,14 +77,33 @@ impl From<String> for Label {
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
 pub struct Reg(pub usize);
 
+impl std::fmt::Display for Reg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "%{}", self.0)
+    }
+}
+
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub struct Var(pub String);
 
+impl std::fmt::Display for Var {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Imm(pub u64);
+
 impl From<u64> for Imm {
     fn from(value: u64) -> Self {
         Self(value)
+    }
+}
+
+impl std::fmt::Display for Imm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

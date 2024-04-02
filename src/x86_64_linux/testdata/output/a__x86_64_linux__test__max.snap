@@ -3,36 +3,50 @@ source: src/x86_64_linux/test.rs
 expression: result
 ---
 max__:
-      push       rbp
-       mov       rbp,       rsp
+    ;; Enter
        mov   qword [rbp-8],       rdi
        mov       rdi,   qword [rbp-8]
        mov  qword [rbp-16],       rsi
        mov       rsi,  qword [rbp-16]
+      push       rbp
+       mov       rbp,       rsp
+    ;; Grt
        mov       rdx,       rdi
        cmp       rdx,       rsi
       setg        al
      movzx       rdx,        al
+    ;; Conditional
       test       rdx,       rdx
         jz       .L0__
+    ;; Return
        mov       rax,       rdi
+    ;; Jump
        jmp     .exit__
+    ;; DefLabel
 .L0__:
+    ;; Return
        mov       rax,       rsi
+    ;; Jump
        jmp     .exit__
+    ;; DefLabel
 .exit__:
+    ;; Leave
        mov       rbp,       rsp
        pop       rbp
        ret
 main__:
+    ;; Enter
       push       rbp
        mov       rbp,       rsp
        mov       rdi,         1
        mov       rsi,         2
+    ;; Call
       call       max__
-       mov       rax,       rdx
+    ;; Jump
        jmp     .exit__
+    ;; DefLabel
 .exit__:
+    ;; Leave
        mov       rbp,       rsp
        pop       rbp
        ret

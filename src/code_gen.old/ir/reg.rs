@@ -8,9 +8,3 @@ impl From<usize> for Reg {
         Self(value)
     }
 }
-
-impl fmt::Display for Reg {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "%{}", self.0)
-    }
-}

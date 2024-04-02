@@ -3,18 +3,25 @@ source: src/x86_64_linux/test.rs
 expression: result
 ---
 main__:
+    ;; Enter
       push       rbp
        mov       rbp,       rsp
        mov       rdi,         1
        mov       rsi,         2
        mov       rdx,         3
+    ;; Mul
        mov       rcx,       rsi
       imul       rcx,       rdx
+    ;; Add
        mov       rsi,       rdi
        add       rsi,       rcx
+    ;; Return
        mov       rax,       rsi
+    ;; Jump
        jmp     .exit__
+    ;; DefLabel
 .exit__:
+    ;; Leave
        mov       rbp,       rsp
        pop       rbp
        ret

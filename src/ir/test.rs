@@ -15,7 +15,8 @@ macro_rules! snapshot {
             let ir_code = code_gen(ast).unwrap();
             let result = ir_code
                 .iter()
-                .map(|i| format!("{i:#?}\n"))
+                .map(ToString::to_string)
+                // .map(|i| format!("{i:#?}\n"))
                 .collect::<String>();
             let mut settings = insta::Settings::clone_current();
             settings.set_snapshot_path("testdata/output/");
