@@ -7,11 +7,7 @@ macro_rules! snapshot {
             let contents = include_str!($path);
             let tokens = lex(contents).unwrap();
             let ast = parse(tokens).unwrap();
-            let ast_string = ast
-                .0
-                .iter()
-                .map(|node| format!("{node}\n"))
-                .collect::<String>();
+            let ast_string = ast.0.iter().map(ToString::to_string).collect::<String>();
             let mut settings = insta::Settings::clone_current();
             settings.set_snapshot_path("testdata/output/");
             settings.bind(|| {

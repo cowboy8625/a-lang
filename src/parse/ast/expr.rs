@@ -314,11 +314,11 @@ impl fmt::Display for ExprIf {
             ..
         } = self;
         let r#else = if let Some((_, eb)) = else_branch {
-            format!(" else {{\n    {eb}\n}};")
+            format!(" else {{\n{eb}\n}};")
         } else {
             ";".into()
         };
-        write!(f, "if {cond} {{\n    {then_branch}\n}}{}", r#else)
+        write!(f, "if {cond} {{\n{then_branch}\n}}{}", r#else)
     }
 }
 

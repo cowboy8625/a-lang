@@ -2,14 +2,12 @@
 source: src/parse/test.rs
 expression: ast_string
 ---
-(func max <(i32)> ((x: (i32))(y: (i32))) (if (> x y) {
-    (return x)
+(func max <(i32)> ((x: (i32))(y: (i32)))
+(if (> x y) {
 
+(return x)
 } else {
-    (return y)
 
-};)
-)
-(func main <(i32)> () (return (max (1, 2, )))
-)
-
+(return y)
+};))(func main <(i32)> ()
+(return (max (1, 2, ))))

@@ -63,6 +63,6 @@ impl fmt::Display for ItemFn {
             .map(ToString::to_string)
             .unwrap_or("NULL".into());
         let params = params.iter().map(ToString::to_string).collect::<String>();
-        write!(f, "(func {name} <{ret}> ({params}) {block})")
+        write!(f, "(func {name} <{ret}> ({params}){block})")
     }
 }

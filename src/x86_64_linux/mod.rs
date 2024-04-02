@@ -73,89 +73,77 @@ impl fmt::Display for Instruction {
                 writeln!(f, "    ;; {message}")
             }
             Self::MoveImm(des, value) => {
-                writeln!(f, "{:>10}{:>10},{:>10}", "mov", des.to_string(), value)
+                writeln!(
+                    f,
+                    "{:>4}{:<10}{:<10}{}",
+                    " ",
+                    "mov",
+                    format!("{des},"),
+                    value
+                )
             }
-            Self::MoveReg(des, src) => writeln!(
-                f,
-                "{:>10}{:>10},{:>10}",
-                "mov",
-                des.to_string(),
-                src.to_string()
-            ),
-            Self::MoveMemReg(mem, reg) => writeln!(
-                f,
-                "{:>10}{:>16},{:>10}",
-                "mov",
-                mem.to_string(),
-                reg.to_string()
-            ),
-            Self::MoveRegMem(reg, mem) => writeln!(
-                f,
-                "{:>10}{:>10},{:>16}",
-                "mov",
-                reg.to_string(),
-                mem.to_string(),
-            ),
-            Self::MoveZx(src) => writeln!(f, "{:>10}{:>10},{:>10}", "movzx", src.to_string(), "al"),
-            Self::Add(des, reg) => writeln!(
-                f,
-                "{:>10}{:>10},{:>10}",
-                "add",
-                des.to_string(),
-                reg.to_string()
-            ),
-            Self::Sub(des, reg) => writeln!(
-                f,
-                "{:>10}{:>10},{:>10}",
-                "sub",
-                des.to_string(),
-                reg.to_string()
-            ),
+            Self::MoveReg(des, src) => {
+                writeln!(f, "{:>4}{:<10}{:<10}{}", " ", "mov", format!("{des},"), src)
+            }
+            Self::MoveMemReg(mem, reg) => {
+                writeln!(f, "{:>4}{:<16}{:<10}{}", " ", "mov", format!("{mem},"), reg)
+            }
+            Self::MoveRegMem(reg, mem) => {
+                writeln!(f, "{:>4}{:<10}{:<16}{}", " ", "mov", format!("{reg},"), mem,)
+            }
+            Self::MoveZx(src) => {
+                writeln!(f, "{:>4}{:<10}{:<10}al", " ", "movzx", format!("{src},"),)
+            }
+            Self::Add(des, reg) => {
+                writeln!(f, "{:>4}{:<10}{:<10}{}", " ", "add", format!("{des},"), reg)
+            }
+            Self::Sub(des, reg) => {
+                writeln!(f, "{:>4}{:<10}{:<10}{}", " ", "sub", format!("{des},"), reg)
+            }
             Self::Mul(des, reg) => writeln!(
                 f,
-                "{:>10}{:>10},{:>10}",
+                "{:>4}{:<10}{:<10}{}",
+                " ",
                 "imul",
-                des.to_string(),
-                reg.to_string()
+                format!("{des},"),
+                reg
             ),
             Self::Div(des, reg) => writeln!(
                 f,
-                "{:>10}{:>10},{:>10}",
+                "{:>4}{:<10}{:<10}{}",
+                " ",
                 "idiv",
-                des.to_string(),
-                reg.to_string()
+                format!("{des},"),
+                reg
             ),
-            Self::DefLabel(name) => writeln!(f, "{}__:", name),
-            Self::Call(name) => writeln!(f, "{:>10}{:>10}__", "call", name),
-            Self::Jump(name) => writeln!(f, "{:>10}{:>10}__", "jmp", name),
-            Self::JumpZero(name) => writeln!(f, "{:>10}{:>10}__", "jz", name),
-            Self::Cmp(lhs, rhs) => writeln!(
-                f,
-                "{:>10}{:>10},{:>10}",
-                "cmp",
-                lhs.to_string(),
-                rhs.to_string()
-            ),
+            Self::DefLabel(name) => writeln!(f, "{name}__:"),
+            Self::Call(name) => writeln!(f, "{:>4}{:<10}{name}__", " ", "call"),
+            Self::Jump(name) => writeln!(f, "{:>4}{:<10}{name}__", " ", "jmp"),
+            Self::JumpZero(name) => writeln!(f, "{:>4}{:<10}{name}__", " ", "jz"),
+            Self::Cmp(lhs, rhs) => {
+                writeln!(f, "{:>4}{:<10}{:<10}{}", " ", "cmp", format!("{lhs},"), rhs)
+            }
             Self::Test(lhs, rhs) => writeln!(
                 f,
-                "{:>10}{:>10},{:>10}",
+                "{:>4}{:<10}{:<10}{}",
+                " ",
                 "test",
-                lhs.to_string(),
-                rhs.to_string()
+                format!("{lhs},"),
+                rhs
             ),
-            Self::SetG => writeln!(f, "{:>10}{:>10}", "setg", "al"),
+            Self::SetG => writeln!(f, "{:>4}{:<10}al", " ", "setg"),
             Self::ProLog => {
-                let push = format!("{:>10}{:>10}", "push", "rbp");
-                let mov = format!("{:>10}{:>10},{:>10}", "mov", "rbp", "rsp");
+                let push = format!("{:>4}{:<10}rbp", " ", "push");
+                let mov = format!("{:>4}{:<10}{:<10}rsp", " ", "mov", "rbp,");
                 writeln!(f, "{push}\n{mov}")
             }
             Self::Epilog => {
-                let mov = format!("{:>10}{:>10},{:>10}", "mov", "rbp", "rsp");
-                let pop = format!("{:>10}{:>10}", "pop", "rbp");
-                let ret = format!("{:>10}", "ret");
+                let mov = format!("{:>4}{:<10}{:<10}rsp", " ", "mov", "rbp,");
+                let pop = format!("{:>4}{:<10}rbp", " ", "pop");
+                let ret = format!("{:>4}ret", " ");
                 writeln!(f, "{mov}\n{pop}\n{ret}")
             }
-            Self::Syscall => writeln!(f, "{:>10}", "syscall"),
+            Self::Syscall => writeln!(f, "{:>4}syscall", " "),
         }
     }
 }

@@ -4,34 +4,34 @@ expression: result
 ---
 main__:
     ;; Enter
-      push       rbp
-       mov       rbp,       rsp
-       mov       rdi,         1
-       mov       rsi,         3
+    push      rbp
+    mov       rbp,      rsp
+    mov       rdi,      1
+    mov       rsi,      3
     ;; Grt
-       mov       rdx,       rdi
-       cmp       rdx,       rsi
-      setg        al
-     movzx       rdx,        al
+    mov       rdx,      rdi
+    cmp       rdx,      rsi
+    setg      al
+    movzx     rdx,      al
     ;; Conditional
-      test       rdx,       rdx
-        jz       .L0__
-       mov       rcx,         1
+    test      rdx,      rdx
+    jz        .L0__
+    mov       rcx,      1
     ;; Return
-       mov       rax,       rcx
+    mov       rax,      rcx
     ;; Jump
-       jmp     .exit__
+    jmp       .exit__
     ;; DefLabel
 .L0__:
-       mov        r8,       100
+    mov       r8,       100
     ;; Return
-       mov       rax,        r8
+    mov       rax,      r8
     ;; Jump
-       jmp     .exit__
+    jmp       .exit__
     ;; DefLabel
 .exit__:
     ;; Leave
-       mov       rbp,       rsp
-       pop       rbp
-       ret
+    mov       rbp,      rsp
+    pop       rbp
+    ret
 
