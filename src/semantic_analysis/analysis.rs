@@ -10,6 +10,11 @@ use super::{Function, Scope, Symbol, SymbolTable, Type, Variable};
 // pub enum SemanticError {
 //     UndefinedSymbol(String, Span),
 // }
+type Ast = &[Item];
+
+pub fn create_symbol_table(ast: Ast) -> SymbolTable {
+    SymbolTableBuilder::default()
+}
 
 pub trait SemanticAnalysisVisitor {
     fn visit_lit(&mut self, _: &Lit) -> Type;
@@ -22,7 +27,7 @@ pub trait SemanticAnalysisVisitor {
     fn visit_block(&mut self, _: &ExprBlock);
     fn visit_params(&mut self, _: &[Param]);
     fn visit_item_fn(&mut self, _: &ItemFn);
-    fn visit(&mut self, items: &[Item]) {
+    fn visit(&mut self, items: Ast) {
         for item in items {
             match item {
                 // TODO: two pass for function delcaration
@@ -113,6 +118,7 @@ impl SemanticAnalysisVisitor for SymbolTableBuilder {
             Expr::Binary(bin) => self.visit_expr_binary(bin),
             Expr::Call(call) => self.visit_expr_call(call),
             Expr::Var(var) => self.visit_expr_var(var),
+            Expr::Let(elet) => todo!(),
             Expr::If(_if_expr) => todo!(),
             Expr::Block(block) => {
                 // HACK: Need to return the last statements type

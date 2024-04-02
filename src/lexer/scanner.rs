@@ -57,9 +57,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn next(&mut self) -> Option<char> {
-        let Some(ch) = self.src.next() else {
-            return None;
-        };
+        let ch = self.src.next()?;
         self.span.right_shift(ch);
         self.last_chr_len = ch.to_string().as_bytes().len();
         Some(ch)
@@ -69,9 +67,7 @@ impl<'a> Lexer<'a> {
     where
         F: FnOnce(char) -> bool,
     {
-        let Some(c) = self.peek() else {
-            return None;
-        };
+        let c = self.peek()?;
         if func(*c) {
             return self.next();
         }
@@ -136,9 +132,7 @@ impl<'a> Lexer<'a> {
 
     fn comment(&mut self) -> Option<Token> {
         self.take_while('\n');
-        let Some(ch) = self.next() else {
-            return None;
-        };
+        let ch = self.next()?;
         self.parse(ch)
     }
 
@@ -189,9 +183,7 @@ impl<'a> Lexer<'a> {
             ';' => self.token::<CtrlSemiColon>(";"),
             // 'λ' => self.op_token("λ"),
             '\n' | '\r' | ' ' | '\0' => {
-                let Some(ch) = self.next() else {
-                    return None;
-                };
+                let ch = self.next()?;
                 self.span.reset(Some(self.last_chr_len));
                 self.parse(ch)
             }

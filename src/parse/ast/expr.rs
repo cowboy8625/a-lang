@@ -8,6 +8,7 @@ pub enum Expr {
     Binary(ExprBinary),
     Call(ExprCall),
     Var(ExprVar),
+    Let(ExprLet),
     If(ExprIf),
     Block(ExprBlock),
     Return(ExprReturn),
@@ -26,6 +27,7 @@ impl fmt::Display for Expr {
             Self::Binary(ebin) => write!(f, "{ebin}"),
             Self::Call(ecall) => write!(f, "{ecall}"),
             Self::Var(evar) => write!(f, "{evar}"),
+            Self::Let(elet) => write!(f, "{elet}"),
             Self::If(i) => write!(f, "{i}"),
             Self::Block(i) => write!(f, "{i}"),
             Self::Return(i) => write!(f, "{i}"),
@@ -40,6 +42,7 @@ impl Expr {
             Self::Binary(i) => i.span(),
             Self::Call(i) => i.span(),
             Self::Var(i) => i.span(),
+            Self::Let(i) => i.span(),
             Self::If(i) => i.span(),
             Self::Block(i) => i.span(),
             Self::Return(i) => i.span(),
@@ -82,6 +85,12 @@ impl From<super::LitChar> for Expr {
 impl From<Ident> for Expr {
     fn from(name: Ident) -> Self {
         Self::Var(ExprVar::new(name))
+    }
+}
+
+impl From<ExprLet> for Expr {
+    fn from(expr_let: ExprLet) -> Self {
+        Self::Let(expr_let)
     }
 }
 
@@ -148,6 +157,47 @@ impl From<Lit> for ExprLit {
 impl ExprLit {
     pub fn span(&self) -> Span {
         self.lit.span()
+    }
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ExprLet {
+    pub let_token: keyword::Let,
+    pub name: Ident,
+    pub eq_token: Op,
+    pub expr: Box<Expr>,
+}
+
+impl fmt::Display for ExprLet {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self {
+            let_token,
+            name,
+            eq_token,
+            expr,
+        } = &self;
+        write!(f, "({let_token} {name} {eq_token} {expr})")
+    }
+}
+
+impl ExprLet {
+    pub fn _new(
+        let_token: super::keyword::Let,
+        name: Ident,
+        eq_token: Op,
+        expr: Box<Expr>,
+    ) -> Self {
+        Self {
+            let_token,
+            name,
+            eq_token,
+            expr,
+        }
+    }
+    pub fn span(&self) -> Span {
+        let start = self.let_token.span();
+        let end = self.expr.as_ref().span();
+        Span::from((start, end))
     }
 }
 

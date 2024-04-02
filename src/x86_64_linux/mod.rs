@@ -216,20 +216,20 @@ impl Compile for ir::DefFunc {
             .flat_map(|(idx, (reg, ty))| {
                 let xreg = state.get_param_reg(reg);
                 vec![
-                    // Instruction::MoveMemReg(
-                    //     Mem::Param {
-                    //         ty: *ty,
-                    //         offset: (idx + 1) * 8,
-                    //     },
-                    //     xreg,
-                    // ),
-                    // Instruction::MoveRegMem(
-                    //     xreg,
-                    //     Mem::Param {
-                    //         ty: *ty,
-                    //         offset: (idx + 1) * 8,
-                    //     },
-                    // ),
+                    Instruction::MoveMemReg(
+                        Mem::Param {
+                            ty: *ty,
+                            offset: (idx + 1) * 8,
+                        },
+                        xreg,
+                    ),
+                    Instruction::MoveRegMem(
+                        xreg,
+                        Mem::Param {
+                            ty: *ty,
+                            offset: (idx + 1) * 8,
+                        },
+                    ),
                 ]
             })
             .collect::<Vec<Instruction>>();

@@ -9,7 +9,8 @@ pub use ast::*;
 use parser::Parser;
 
 use crate::lexer::TokenStream;
+use crate::symbol_table::SymbolTable;
 
-pub fn parse(stream: TokenStream) -> Result<Vec<Item>, Vec<String>> {
+pub fn parse(stream: TokenStream) -> Result<(Vec<Item>, SymbolTable), Vec<String>> {
     Parser::new(stream).parse()
 }

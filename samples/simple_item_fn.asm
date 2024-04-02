@@ -4,57 +4,57 @@ segment readable executable
 entry _start__
 add__:
     ;; Enter
-      push       rbp
-       mov       rbp,       rsp
+    push       rbp
+    mov       rbp,       rsp
     ;; Add
-       mov       rdx,       rdi
-       add       rdx,       rsi
+    mov       rdx,       rdi
+    add       rdx,       rsi
     ;; Return
-       mov       rax,       rdx
+    mov       rax,       rdx
     ;; Jump
-       jmp     .exit__
+    jmp     .exit__
     ;; DefLabel
 .exit__:
     ;; Leave
-       mov       rbp,       rsp
-       pop       rbp
-       ret
+    mov       rbp,       rsp
+    pop       rbp
+    ret
 addOne__:
     ;; Enter
-      push       rbp
-       mov       rbp,       rsp
-       mov       rsi,         1
+    push       rbp
+    mov       rbp,       rsp
+    mov       rsi,         1
     ;; Call
-      call       add__
+    call       add__
     ;; Jump
-       jmp     .exit__
+    jmp     .exit__
     ;; DefLabel
 .exit__:
     ;; Leave
-       mov       rbp,       rsp
-       pop       rbp
-       ret
+    mov       rbp,       rsp
+    pop       rbp
+    ret
 main__:
     ;; Enter
-      push       rbp
-       mov       rbp,       rsp
-       mov       rdi,        31
+    push       rbp
+    mov       rbp,       rsp
+    mov       rdi,        31
     ;; Call
-      call    addOne__
+    call    addOne__
     ;; Jump
-       jmp     .exit__
+    jmp     .exit__
     ;; DefLabel
 .exit__:
     ;; Leave
-       mov       rbp,       rsp
-       pop       rbp
-       ret
+    mov       rbp,       rsp
+    pop       rbp
+    ret
 
 
 _start__:
-      call      main__
-       mov       rdi,       rax
-       mov       rax,        60
-   syscall
+    call      main__
+    mov       rdi,       rax
+    mov       rax,        60
+    syscall
 
 segment readable writable

@@ -8,10 +8,12 @@ pub use instruction::*;
 use crate::lexer::*;
 
 use crate::parse::{
-    Expr, ExprBinary, ExprBlock, ExprCall, ExprIf, ExprLit, ExprReturn, ExprVar, Ident, Item,
-    ItemFn, Lit, LitBool, LitInt, Op, Param, Statement,
+    Expr, ExprBinary, ExprBlock, ExprCall, ExprIf, ExprLet, ExprLit, ExprReturn, ExprVar, Ident,
+    Item, ItemFn, Lit, LitBool, LitInt, Op, Param, Statement,
 };
-use crate::semantic_analysis::SymbolTable;
+// use crate::semantic_analysis::{Symbol, SymbolTable, Variable};
+
+use crate::symbol_table::SymbolTable;
 
 pub fn code_gen(
     (ast, symbol_table): (Vec<Item>, SymbolTable),
@@ -105,8 +107,8 @@ trait AstVisitor: Ir {
     fn visit_item_fn(&mut self, item_fn: &ItemFn);
     fn visit_lit_int(&mut self, lit_int: &LitInt) -> Reg;
     fn visit_lit_bool(&mut self, lit_bool: &LitBool) -> Reg;
-
     fn visit_expr_if(&mut self, expr_if: &ExprIf) -> Reg;
+    fn visit_expr_let(&mut self, expr_let: &ExprLet) -> Reg;
 
     fn visit_expr_return(&mut self, expr_ret: &ExprReturn) -> Reg {
         let ExprReturn { expr, .. } = expr_ret;
@@ -140,6 +142,7 @@ trait AstVisitor: Ir {
             Expr::If(eif) => self.visit_expr_if(eif),
             Expr::Block(eblock) => self.visit_expr_block(eblock),
             Expr::Return(ereturn) => self.visit_expr_return(ereturn),
+            Expr::Let(_) => unimplemented!(),
         }
     }
 
@@ -334,6 +337,24 @@ impl AstVisitor for IrGenerator {
         let num: bool = lit_bool.parse::<bool>().unwrap();
         let imm: Imm = (num as u64).into();
         self.load_imm(imm)
+    }
+
+    fn visit_expr_let(&mut self, expr_let: &ExprLet) -> Reg {
+        let ExprLet { expr, .. } = expr_let;
+        // let Some(Symbol::Variable(var)) = self._symbol_table.get(&name.value()) else {
+        //     panic!("expected symbol");
+        // };
+        // FIXME: ssa variables are just regesters.
+        // I guess we need to store the variable name
+        // with the register its origanly bound to?
+        //
+        // let Variable {
+        //     scope,
+        //     name,
+        //     ty,
+        //     span,
+        // } = var;
+        self.visit_expr(expr)
     }
 
     fn visit_expr_if(&mut self, expr_if: &ExprIf) -> Reg {

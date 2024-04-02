@@ -42,7 +42,7 @@ impl ItemFn {
         }
     }
 
-    pub fn span(&self) -> Span {
+    pub fn _span(&self) -> Span {
         let start = self.keyword_fn.span();
         let end = self.block.span();
         Span::from((start, end))

@@ -1,4 +1,3 @@
-use crate::semantic_analysis::{SemanticAnalysisVisitor, SymbolTableBuilder};
 macro_rules! snapshot {
     ($name:tt, $path:tt) => {
         #[test]
@@ -10,11 +9,7 @@ macro_rules! snapshot {
             let contents = include_str!($path);
             let tokens = lex(contents).unwrap();
             let ast = parse(tokens).unwrap();
-            let mut symbol_table_builder = SymbolTableBuilder::default();
-            symbol_table_builder.visit(&ast);
-            let symbol_table = symbol_table_builder.build();
-
-            let ir_code = ir::code_gen((ast, symbol_table)).unwrap();
+            let ir_code = ir::code_gen(ast).unwrap();
             let asm_data = compile_ir_code(ir_code).unwrap();
             let result = instruction_to_string(asm_data).unwrap();
             let mut settings = insta::Settings::clone_current();

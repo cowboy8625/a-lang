@@ -8,6 +8,7 @@ macro_rules! snapshot {
             let tokens = lex(contents).unwrap();
             let ast = parse(tokens).unwrap();
             let ast_string = ast
+                .0
                 .iter()
                 .map(|node| format!("{node}\n"))
                 .collect::<String>();

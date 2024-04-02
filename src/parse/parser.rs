@@ -1,16 +1,19 @@
 use super::{
     keyword, Ctrl, CtrlColon, CtrlComma, CtrlLBrace, CtrlLParan, CtrlRBrace, CtrlRParan,
-    CtrlRightArrow, CtrlSemiColon, Expr, ExprBinary, ExprBlock, ExprCall, ExprIf, ExprReturn,
-    Ident, Item, ItemFn, LitBool, LitChar, LitInt, LitStr, Op, OpAdd, OpDiv, OpEqualEqual, OpGeq,
-    OpGrt, OpLeq, OpLes, OpMul, OpNeq, OpSub, Param, Statement, Type,
+    CtrlRightArrow, CtrlSemiColon, Expr, ExprBinary, ExprBlock, ExprCall, ExprIf, ExprLet,
+    ExprReturn, Ident, Item, ItemFn, LitBool, LitChar, LitInt, LitStr, Op, OpAdd, OpDiv, OpEqual,
+    OpEqualEqual, OpGeq, OpGrt, OpLeq, OpLes, OpMul, OpNeq, OpSub, Param, Statement, Type,
 };
+use crate::symbol_table::{Scope, Symbol, SymbolData, SymbolTable, SymbolType, TypeName};
 
-use crate::lexer::{Token, TokenStream};
+use crate::lexer::{Span, Token, TokenStream};
 type PResult<T> = std::result::Result<T, String>;
 
 pub struct Parser {
     stream: TokenStream,
     errors: Vec<String>,
+    symbol_table: SymbolTable,
+    scope: Vec<Scope>,
 }
 
 // declaration
@@ -28,10 +31,12 @@ impl Parser {
         Self {
             stream,
             errors: vec![],
+            symbol_table: SymbolTable::new(),
+            scope: vec![Scope::default()],
         }
     }
 
-    pub fn parse(mut self) -> Result<Vec<Item>, Vec<String>> {
+    pub fn parse(mut self) -> Result<(Vec<Item>, SymbolTable), Vec<String>> {
         let mut ast = vec![];
         while self.stream.is_not_at_end() {
             match self.program() {
@@ -47,7 +52,32 @@ impl Parser {
         if !self.errors.is_empty() {
             return Err(self.errors);
         }
-        Ok(ast)
+        Ok((ast, self.symbol_table.clone()))
+    }
+
+    fn current_scope(&self) -> Scope {
+        self.scope.last().cloned().unwrap_or_default()
+    }
+
+    fn insert_symbol(
+        &mut self,
+        name: impl Into<String>,
+        ty: SymbolType,
+        type_name: TypeName,
+        span: Span,
+    ) {
+        self.symbol_table.insert(
+            Symbol {
+                name: name.into(),
+                scope: self.current_scope(),
+            },
+            SymbolData {
+                ty,
+                scope: self.current_scope(),
+                type_name,
+                span,
+            },
+        );
     }
 
     fn recover(&mut self) {
@@ -117,9 +147,33 @@ impl Parser {
             .next_if::<Ident>()
             .ok_or::<String>("expected a ident".into())?
             .clone();
+
+        let func_name = name.value();
+        let func_scope = self.current_scope();
+        let func_ty = SymbolType::Function;
+        let func_span = name.span();
+
+        self.scope.push(Scope::Function(name.value()));
+
         let params = self.params()?;
         let ret_type = self.ret_type()?;
         let block = self.block()?;
+
+        self.symbol_table.insert(
+            Symbol {
+                name: func_name,
+                scope: func_scope.clone(),
+            },
+            SymbolData {
+                ty: func_ty,
+                scope: func_scope.clone(),
+                type_name: ret_type.clone().map(|t| t.into()).unwrap_or(TypeName::Null),
+                span: func_span,
+            },
+        );
+
+        self.scope.pop();
+
         Ok(Item::Fn(ItemFn::new(
             keyword_fn, name, params, block, ret_type,
         )))
@@ -132,6 +186,7 @@ impl Parser {
         let Some(t) = self.stream.next_if::<Ident>() else {
             return Err("expected return type".into());
         };
+
         Ok(Some(t.into()))
     }
 
@@ -151,6 +206,14 @@ impl Parser {
             let Some(kind) = self.stream.next_if::<Ident>().cloned() else {
                 break;
             };
+
+            self.insert_symbol(
+                name.value(),
+                SymbolType::Parameter,
+                kind.clone().into(),
+                name.span(),
+            );
+
             params.push((&name, &kind).into());
             // grabs trailing commas.
             self.stream.next_if::<CtrlComma>();
@@ -182,9 +245,43 @@ impl Parser {
     }
 
     fn statement(&mut self) -> PResult<Statement> {
-        let stmt = self.expr_return()?;
+        let stmt = self.let_expression()?;
         let span = stmt.span();
         Ok(Statement { stmt, span })
+    }
+
+    fn let_expression(&mut self) -> PResult<Expr> {
+        let Some(let_token) = self.stream.next_if::<keyword::Let>().cloned() else {
+            return self.expr_return();
+        };
+        let name = self
+            .stream
+            .next_if::<Ident>()
+            .ok_or::<String>("expected a ident".into())?
+            .clone();
+        let eq_token = self
+            .stream
+            .next_if::<OpEqual>()
+            .cloned()
+            .ok_or::<String>("expected '='".into())?;
+        // TODO: probably guess the type of the expression
+        let expr = self.expression();
+
+        self.insert_symbol(
+            name.value(),
+            SymbolType::Variable,
+            // TODO: Get type from expr
+            TypeName::U64,
+            name.span(),
+        );
+
+        Ok(ExprLet {
+            let_token,
+            name,
+            eq_token: eq_token.into(),
+            expr: expr.into(),
+        }
+        .into())
     }
 
     fn expr_return(&mut self) -> PResult<Expr> {
@@ -219,9 +316,7 @@ impl Parser {
     }
 
     fn else_branch(&mut self) -> Option<(keyword::Else, Box<Expr>)> {
-        let Some(keyword_else) = self.stream.next_if::<keyword::Else>().cloned() else {
-            return None;
-        };
+        let keyword_else = self.stream.next_if::<keyword::Else>().cloned()?;
         let block = if self.stream.peek::<keyword::If>().is_some() {
             self.if_expression()
         } else {

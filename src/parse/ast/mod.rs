@@ -4,7 +4,9 @@ pub mod keyword;
 mod lit;
 
 use crate::lexer::Span;
-pub use expr::{Expr, ExprBinary, ExprBlock, ExprCall, ExprIf, ExprLit, ExprReturn, ExprVar};
+pub use expr::{
+    Expr, ExprBinary, ExprBlock, ExprCall, ExprIf, ExprLet, ExprLit, ExprReturn, ExprVar,
+};
 pub use item::{Item, ItemFn};
 pub use lit::{Lit, LitBool, LitChar, LitInt, LitStr};
 
