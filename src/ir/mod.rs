@@ -17,7 +17,7 @@ use crate::symbol_table::SymbolTable;
 
 pub fn code_gen(
     (ast, symbol_table): (Vec<Item>, SymbolTable),
-) -> Result<Vec<Instruction>, Vec<String>> {
+) -> Result<(Vec<Instruction>, SymbolTable), Vec<String>> {
     let mut gen = IrGenerator::new(symbol_table);
     gen.visit(&ast);
     // for i in gen.code.iter() {
@@ -44,7 +44,7 @@ pub fn code_gen(
     //         Instruction::Leave(_) => eprintln!("leave"),
     //     }
     // }
-    Ok(gen.code)
+    Ok((gen.code, gen.symbol_table))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -197,13 +197,13 @@ struct IrGenerator {
     reg_counter: usize,
     vars: HashMap<String, Reg>,
     gen_label_number: usize,
-    _symbol_table: SymbolTable,
+    symbol_table: SymbolTable,
 }
 
 impl IrGenerator {
-    fn new(_symbol_table: SymbolTable) -> Self {
+    fn new(symbol_table: SymbolTable) -> Self {
         Self {
-            _symbol_table,
+            symbol_table,
             ..Default::default()
         }
     }

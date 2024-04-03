@@ -6,16 +6,18 @@ use reg_state::RegState;
 pub use std::fmt;
 pub use x86reg::*;
 
-use crate::ir;
+use crate::{ir, symbol_table::SymbolTable};
 // pub fn code_gen(ir: Vec<ir::Instruction>) -> Result<String, Vec<String>> {
 //     compile_ir_code(ir).and_then(instruction_to_string)
 // }
 
-pub fn compile_ir_code(ir: Vec<ir::Instruction>) -> Result<Vec<Instruction>, Vec<String>> {
+pub fn compile_ir_code(
+    (ir, symbol_table): (Vec<ir::Instruction>, SymbolTable),
+) -> Result<Vec<Instruction>, Vec<String>> {
     let mut state = RegState::default();
     Ok(ir
         .iter()
-        .map(|i| i.compile(&mut state))
+        .map(|i| i.compile(&mut state, &symbol_table))
         .collect::<Vec<Vec<Instruction>>>()
         .into_iter()
         .flatten()
@@ -27,8 +29,9 @@ pub fn instruction_to_string(ir: Vec<Instruction>) -> Result<String, Vec<String>
 }
 
 trait Compile {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction>;
+    fn compile(&self, state: &mut RegState, symbol_table: &SymbolTable) -> Vec<Instruction>;
 }
+
 trait TypeSize {
     fn size(&self) -> &'static str;
 }
@@ -149,31 +152,31 @@ impl fmt::Display for Instruction {
 }
 
 impl Compile for ir::Instruction {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, st: &SymbolTable) -> Vec<Instruction> {
         match self {
-            ir::Instruction::LoadImm(i) => i.compile(state),
-            ir::Instruction::CopyReg(i) => i.compile(state),
-            ir::Instruction::DefFunc(i) => i.compile(state),
-            ir::Instruction::Add(i) => i.compile(state),
-            ir::Instruction::Sub(i) => i.compile(state),
-            ir::Instruction::Mul(i) => i.compile(state),
-            ir::Instruction::Div(i) => i.compile(state),
-            ir::Instruction::Grt(i) => i.compile(state),
-            ir::Instruction::Copy(i) => i.compile(state),
-            ir::Instruction::Conditional(i) => i.compile(state),
-            ir::Instruction::Jump(i) => i.compile(state),
-            ir::Instruction::DefLabel(i) => i.compile(state),
-            ir::Instruction::Call(i) => i.compile(state),
-            ir::Instruction::Return(i) => i.compile(state),
-            ir::Instruction::Enter(i) => i.compile(state),
-            ir::Instruction::Leave(i) => i.compile(state),
+            ir::Instruction::LoadImm(i) => i.compile(state, st),
+            ir::Instruction::CopyReg(i) => i.compile(state, st),
+            ir::Instruction::DefFunc(i) => i.compile(state, st),
+            ir::Instruction::Add(i) => i.compile(state, st),
+            ir::Instruction::Sub(i) => i.compile(state, st),
+            ir::Instruction::Mul(i) => i.compile(state, st),
+            ir::Instruction::Div(i) => i.compile(state, st),
+            ir::Instruction::Grt(i) => i.compile(state, st),
+            ir::Instruction::Copy(i) => i.compile(state, st),
+            ir::Instruction::Conditional(i) => i.compile(state, st),
+            ir::Instruction::Jump(i) => i.compile(state, st),
+            ir::Instruction::DefLabel(i) => i.compile(state, st),
+            ir::Instruction::Call(i) => i.compile(state, st),
+            ir::Instruction::Return(i) => i.compile(state, st),
+            ir::Instruction::Enter(i) => i.compile(state, st),
+            ir::Instruction::Leave(i) => i.compile(state, st),
         }
     }
 }
 
 // LoadImm(LoadImm),
 impl Compile for ir::LoadImm {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let ir::LoadImm {
             des,
             imm: ir::Imm(imm),
@@ -184,7 +187,7 @@ impl Compile for ir::LoadImm {
 }
 // CopyReg(CopyReg),
 impl Compile for ir::CopyReg {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let ir::CopyReg { des, src } = self;
         let des = state.get_reg(des);
         let src = state.get_reg(src);
@@ -193,7 +196,7 @@ impl Compile for ir::CopyReg {
 }
 // DefFunc(DefFunc),
 impl Compile for ir::DefFunc {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, st: &SymbolTable) -> Vec<Instruction> {
         let ir::DefFunc {
             name, params, body, ..
         } = self;
@@ -223,7 +226,7 @@ impl Compile for ir::DefFunc {
             .collect::<Vec<Instruction>>();
         let mut body = body
             .iter()
-            .flat_map(|inst| inst.compile(state))
+            .flat_map(|inst| inst.compile(state, st))
             .collect::<Vec<Instruction>>();
         result.push(body.remove(0));
         result.extend_from_slice(&params);
@@ -238,7 +241,7 @@ impl Compile for ir::DefFunc {
 }
 // Add(Add),
 impl Compile for ir::Add {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let ir::Add { des, lhs, rhs } = self;
         let xdes = state.get_reg(des);
         let xlhs = state.get_reg(lhs);
@@ -254,7 +257,7 @@ impl Compile for ir::Add {
 }
 // Sub(Sub),
 impl Compile for ir::Sub {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let ir::Sub { des, lhs, rhs } = self;
         let des = state.get_reg(des);
         let lhs = state.get_reg(lhs);
@@ -268,7 +271,7 @@ impl Compile for ir::Sub {
 }
 // Mul(Mul),
 impl Compile for ir::Mul {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let ir::Mul { des, lhs, rhs } = self;
         let xdes = state.get_reg(des);
         let xlhs = state.get_reg(lhs);
@@ -284,7 +287,7 @@ impl Compile for ir::Mul {
 }
 // Div(Div),
 impl Compile for ir::Div {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let ir::Div { des, lhs, rhs } = self;
         let des = state.get_reg(des);
         let lhs = state.get_reg(lhs);
@@ -298,7 +301,7 @@ impl Compile for ir::Div {
 }
 
 impl Compile for ir::Grt {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let ir::Grt { des, lhs, rhs } = self;
         let des = state.get_reg(des);
         let lhs = state.get_reg(lhs);
@@ -314,13 +317,13 @@ impl Compile for ir::Grt {
 }
 
 impl Compile for ir::Copy {
-    fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, _state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         unimplemented!("{:?}", self)
     }
 }
 // Conditional(Conditional),
 impl Compile for ir::Conditional {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let des = state.get_reg(&self.reg);
         vec![
             Instruction::Comment("Conditional".into()),
@@ -331,7 +334,7 @@ impl Compile for ir::Conditional {
 }
 // Jump(Jump),
 impl Compile for ir::Jump {
-    fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, _state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         vec![
             Instruction::Comment("Jump".into()),
             Instruction::Jump(self.name()),
@@ -340,7 +343,7 @@ impl Compile for ir::Jump {
 }
 // DefLabel(DefLabel),
 impl Compile for ir::DefLabel {
-    fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, _state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         vec![
             Instruction::Comment("DefLabel".into()),
             Instruction::DefLabel(self.name()),
@@ -349,7 +352,7 @@ impl Compile for ir::DefLabel {
 }
 // Call(Call),
 impl Compile for ir::Call {
-    fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, _state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         vec![
             Instruction::Comment("Call".into()),
             Instruction::Call(self.caller.0.to_string()),
@@ -361,7 +364,7 @@ impl Compile for ir::Call {
 
 // Return(Return),
 impl Compile for ir::Return {
-    fn compile(&self, state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         let Some(r) = self.0 else {
             return vec![];
         };
@@ -376,13 +379,13 @@ impl Compile for ir::Return {
 
 // Enter(Enter),
 impl Compile for ir::Enter {
-    fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, _state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         vec![Instruction::Comment("Enter".into()), Instruction::ProLog]
     }
 }
 // Leave(Leave),
 impl Compile for ir::Leave {
-    fn compile(&self, _state: &mut RegState) -> Vec<Instruction> {
+    fn compile(&self, _state: &mut RegState, _: &SymbolTable) -> Vec<Instruction> {
         vec![Instruction::Comment("Leave".into()), Instruction::Epilog]
     }
 }

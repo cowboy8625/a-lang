@@ -14,6 +14,7 @@ macro_rules! snapshot {
             // let symbol_table = symbol_table_builder.build();
             let ir_code = code_gen(ast).unwrap();
             let result = ir_code
+                .0
                 .iter()
                 .map(ToString::to_string)
                 // .map(|i| format!("{i:#?}\n"))
