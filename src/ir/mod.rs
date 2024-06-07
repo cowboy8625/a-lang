@@ -196,6 +196,7 @@ struct IrGenerator {
     block: Vec<Instruction>,
     reg_counter: usize,
     vars: HashMap<String, Reg>,
+    return_call_regs: HashMap<String, Reg>,
     gen_label_number: usize,
     symbol_table: SymbolTable,
 }
@@ -301,6 +302,7 @@ impl AstVisitor for IrGenerator {
         };
         // FIXME: this reg needs to be stored with var in discriper?
         let ret = self.get_reg();
+        self.return_call_regs.insert(name.to_string(), ret);
         let args = args
             .iter()
             .map(|expr| self.visit_expr(expr))

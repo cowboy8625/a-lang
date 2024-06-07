@@ -31,3 +31,7 @@ macro_rules! snapshot {
 snapshot!(binary, "../../snapshots/binary.a");
 snapshot!(ifelse, "../../snapshots/ifelse.a");
 snapshot!(max, "../../snapshots/max.a");
+snapshot!(
+    check_return_from_nested_func,
+    "../../snapshots/check_return_from_nested_func.a"
+);

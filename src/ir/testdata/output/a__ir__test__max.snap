@@ -13,7 +13,9 @@ function max(%0: u64, %1: u64) {
     goto .exit
 .exit:
     leave
-}function main() {
+}
+
+function main() {
     enter
     load %1 1
     load %2 2
@@ -23,3 +25,5 @@ function max(%0: u64, %1: u64) {
 .exit:
     leave
 }
+
+

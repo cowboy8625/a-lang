@@ -172,7 +172,7 @@ impl std::fmt::Display for DefFunc {
             .map(ToString::to_string)
             .collect::<Vec<_>>()
             .join("\n");
-        write!(f, "function {}({}) {{\n{}\n}}", self.name, params, body)
+        write!(f, "function {}({}) {{\n{}\n}}\n\n", self.name, params, body)
     }
 }
 
@@ -278,6 +278,7 @@ pub struct Return(pub Option<Reg>);
 
 impl std::fmt::Display for Return {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // write!(f, "    return {}", self.0)
         match &self.0 {
             Some(reg) => write!(f, "    return {}", reg),
             None => write!(f, "    return"),

@@ -4,28 +4,24 @@ expression: result
 ---
 max__:
     ;; Enter
-    mov             qword [rbp-8],rdi
-    mov       rdi,            qword [rbp-8]
-    mov             qword [rbp-16],rsi
-    mov       rsi,            qword [rbp-16]
     push      rbp
     mov       rbp,      rsp
     ;; Grt
-    mov       rdx,      rdi
-    cmp       rdx,      rsi
+    mov       rdi,      rsi
+    cmp       rdi,      rdx
     setg      al
-    movzx     rdx,      al
+    movzx     rdi,      al
     ;; Conditional
-    test      rdx,      rdx
+    test      rdi,      rdi
     jz        .L0__
     ;; Return
-    mov       rax,      rdi
+    mov       rax,      rsi
     ;; Jump
     jmp       .exit__
     ;; DefLabel
 .L0__:
     ;; Return
-    mov       rax,      rsi
+    mov       rax,      rdx
     ;; Jump
     jmp       .exit__
     ;; DefLabel

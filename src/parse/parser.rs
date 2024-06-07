@@ -75,6 +75,7 @@ impl Parser {
                 ty,
                 scope: self.current_scope(),
                 type_name,
+                reg: None,
                 span,
             },
         );
@@ -168,6 +169,7 @@ impl Parser {
                 ty: func_ty,
                 scope: func_scope.clone(),
                 type_name: ret_type.clone().map(|t| t.into()).unwrap_or(TypeName::Null),
+                reg: None,
                 span: func_span,
             },
         );

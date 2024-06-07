@@ -1,0 +1,11 @@
+fn add(x: u64, y: u64) -> u64 {
+  return x + y;
+}
+
+fn addOne(x: u64) -> u64 {
+  return add(1, x);
+}
+
+fn main() {
+  return addOne(31);
+}

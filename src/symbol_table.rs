@@ -28,6 +28,7 @@
 //     return one(x);
 // }
 
+use crate::ir::Reg;
 use crate::lexer::Span;
 use std::collections::HashMap;
 pub type SymbolTable = HashMap<Symbol, SymbolData>;
@@ -109,5 +110,6 @@ pub struct SymbolData {
     pub ty: SymbolType,
     pub scope: Scope,
     pub type_name: TypeName,
+    pub reg: Option<Reg>,
     pub span: Span,
 }

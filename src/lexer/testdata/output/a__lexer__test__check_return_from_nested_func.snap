@@ -1,0 +1,67 @@
+---
+source: src/lexer/test.rs
+expression: snapshot_lexing(contents)
+---
+fn add(x: u64, y: u64) -> u64 {
+^^ Fn((0,0)->(0,2))
+   ^^^ Ident 'add' (0,3)->(0,6)
+      ^ CtrlLParan '(' (0,6)->(0,7)
+       ^ Ident 'x' (0,7)->(0,8)
+        ^ CtrlColon ':' (0,8)->(0,9)
+          ^^^ Ident 'u64' (0,10)->(0,13)
+             ^ CtrlComma ',' (0,13)->(0,14)
+               ^ Ident 'y' (0,15)->(0,16)
+                ^ CtrlColon ':' (0,16)->(0,17)
+                  ^^^ Ident 'u64' (0,18)->(0,21)
+                     ^ CtrlRParan ')' (0,21)->(0,22)
+                       ^^ CtrlRightArrow '->' (0,23)->(0,25)
+                          ^^^ Ident 'u64' (0,26)->(0,29)
+                              ^ CtrlLBrace '{' (0,30)->(0,31)
+  return x + y;
+  ^^^^^^ Return((1,2)->(1,8))
+         ^ Ident 'x' (1,9)->(1,10)
+           ^ OpAdd '+' (1,11)->(1,12)
+             ^ Ident 'y' (1,13)->(1,14)
+              ^ CtrlSemiColon ';' (1,14)->(1,15)
+}
+^ CtrlRBrace '}' (2,0)->(2,1)
+
+fn addOne(x: u64) -> u64 {
+^^ Fn((4,0)->(4,2))
+   ^^^^^^ Ident 'addOne' (4,3)->(4,9)
+         ^ CtrlLParan '(' (4,9)->(4,10)
+          ^ Ident 'x' (4,10)->(4,11)
+           ^ CtrlColon ':' (4,11)->(4,12)
+             ^^^ Ident 'u64' (4,13)->(4,16)
+                ^ CtrlRParan ')' (4,16)->(4,17)
+                  ^^ CtrlRightArrow '->' (4,18)->(4,20)
+                     ^^^ Ident 'u64' (4,21)->(4,24)
+                         ^ CtrlLBrace '{' (4,25)->(4,26)
+  return add(1, x);
+  ^^^^^^ Return((5,2)->(5,8))
+         ^^^ Ident 'add' (5,9)->(5,12)
+            ^ CtrlLParan '(' (5,12)->(5,13)
+             ^ LitInt '1' (5,13)->(5,14)
+              ^ CtrlComma ',' (5,14)->(5,15)
+                ^ Ident 'x' (5,16)->(5,17)
+                 ^ CtrlRParan ')' (5,17)->(5,18)
+                  ^ CtrlSemiColon ';' (5,18)->(5,19)
+}
+^ CtrlRBrace '}' (6,0)->(6,1)
+
+fn main() {
+^^ Fn((8,0)->(8,2))
+   ^^^^ Ident 'main' (8,3)->(8,7)
+       ^ CtrlLParan '(' (8,7)->(8,8)
+        ^ CtrlRParan ')' (8,8)->(8,9)
+          ^ CtrlLBrace '{' (8,10)->(8,11)
+  return addOne(31);
+  ^^^^^^ Return((9,2)->(9,8))
+         ^^^^^^ Ident 'addOne' (9,9)->(9,15)
+               ^ CtrlLParan '(' (9,15)->(9,16)
+                ^^ LitInt '31' (9,16)->(9,18)
+                  ^ CtrlRParan ')' (9,18)->(9,19)
+                   ^ CtrlSemiColon ';' (9,19)->(9,20)
+}
+^ CtrlRBrace '}' (10,0)->(10,1)
+

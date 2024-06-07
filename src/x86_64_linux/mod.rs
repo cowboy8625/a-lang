@@ -89,7 +89,8 @@ impl fmt::Display for Instruction {
                 writeln!(f, "{:>4}{:<10}{:<10}{}", " ", "mov", format!("{des},"), src)
             }
             Self::MoveMemReg(mem, reg) => {
-                writeln!(f, "{:>4}{:<16}{:<10}{}", " ", "mov", format!("{mem},"), reg)
+                let fmt_mem = format!("{mem},");
+                writeln!(f, "{:>4}{:<10}{:<10}{}", " ", "mov", fmt_mem, reg)
             }
             Self::MoveRegMem(reg, mem) => {
                 writeln!(f, "{:>4}{:<10}{:<16}{}", " ", "mov", format!("{reg},"), mem,)

@@ -6,6 +6,7 @@ mod ir;
 mod lexer;
 mod parse;
 // mod semantic_analysis;
+mod bitbox;
 mod symbol_table;
 mod x86_64_linux;
 
@@ -51,7 +52,7 @@ fn print_error_message(err: Vec<String>) -> Vec<String> {
 }
 
 fn compile(flags: Flags) -> Result<(), Vec<String>> {
-    std::fs::read_to_string(&flags.filename)
+    let ir_codes = std::fs::read_to_string(&flags.filename)
         .map_err(|e| vec![e.to_string()])
         .and_then(lexer::lex)
         .and_then(print_output(flags.debug_tokens))
@@ -67,15 +68,22 @@ fn compile(flags: Flags) -> Result<(), Vec<String>> {
         // })
         // .and_then(semantic_analysis::create_symbol_table)
         .and_then(ir::code_gen)
-        .and_then(print_output(flags.debug_ir))
-        .and_then(x86_64_linux::compile_ir_code)
-        .and_then(print_output(flags.debug_asm))
-        .and_then(x86_64_linux::instruction_to_string)
-        .and_then(print_output_asm(flags.debug_asm))
-        .map(|asm| (flags.filename, asm))
-        .and_then(write_asm_to_file)
-        .and_then(compile_asm_with_fasm)
-        .map_err(print_error_message)
+        .and_then(print_output(flags.debug_ir));
+
+    match flags.target {
+        Target::X86_64Linux => {
+            return ir_codes
+                .and_then(x86_64_linux::compile_ir_code)
+                .and_then(print_output(flags.debug_asm))
+                .and_then(x86_64_linux::instruction_to_string)
+                .and_then(print_output_asm(flags.debug_asm))
+                .map(|asm| (flags.filename, asm))
+                .and_then(write_asm_to_file)
+                .and_then(compile_asm_with_fasm)
+                .map_err(print_error_message);
+        }
+        Target::Bitbox => return ir_codes.and_then(bitbox::compile_ir_code),
+    }
 }
 fn start_func_assembly() -> String {
     use x86_64_linux::{Instruction, X86Reg64};
@@ -161,6 +169,13 @@ struct Flags {
     pub debug_ast: bool,
     pub debug_ir: bool,
     pub debug_asm: bool,
+    pub target: Target,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Target {
+    X86_64Linux,
+    Bitbox,
 }
 
 impl Flags {
@@ -169,11 +184,14 @@ impl Flags {
         let mut debug_ast = false;
         let mut debug_ir = false;
         let mut debug_asm = false;
+        let mut target = Target::X86_64Linux;
         let Some(filename) = std::env::args().nth(1) else {
             return Err("No file given to parse".into());
         };
         for arg in std::env::args().skip(2) {
             match arg.as_str() {
+                "--target=bitbox" => target = Target::Bitbox,
+                "--target=x86_64_linux" => target = Target::X86_64Linux,
                 "-dtk" | "--debug-tokens" => debug_tokens = true,
                 "-dast" | "--debug-ast" => debug_ast = true,
                 "-dir" | "--debug-ir" => debug_ir = true,
@@ -188,6 +206,7 @@ impl Flags {
             debug_ast,
             debug_ir,
             debug_asm,
+            target,
         })
     }
 }
